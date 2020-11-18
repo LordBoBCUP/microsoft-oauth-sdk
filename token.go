@@ -121,7 +121,7 @@ func (t *Token) ValidateCustomClaims(claims map[string]string) (bool, error, []s
 	}
 	
 	if (len(invalid) > 0 ){
-		return false, errors.New("One or more of the custom claims failed to validate with the token."), valid, invalid
+		return false, nil, valid, invalid
 	}
 
 	return true, nil, valid, invalid
@@ -131,8 +131,6 @@ func checkInternalClaim(claims []struct { Claim string
 	Value string}, key string, value string) bool {
 
 		for _, val := range claims {
-			// fmt.Println(val.Claim)
-			// fmt.Println(val.Value)
 			
 			if val.Claim == key  {
 				if val.Value == value {
@@ -151,7 +149,6 @@ func extractClaims(token *jwt.Token) (jwt.MapClaims, error) {
 		return nil, errors.New("Unable to extrat claims. Token is either not valid or an error has occurred.")
 	}
 
-	// return claims["email"].(string), claims["sub"].(string), nil
 	return claims, nil
 }
 

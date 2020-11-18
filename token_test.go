@@ -61,7 +61,6 @@ func TestCustomClaimValidation(t *testing.T) {
 	m = make(map[string]string)
 
 	m["appid"] = "f450d051-36b1-4fc5-b9f5-b9622f65937c"
-	m["lol"] = "123"
 	res, err, valid, invalid := tempToken.ValidateCustomClaims(m)
 
 	if err != nil {
