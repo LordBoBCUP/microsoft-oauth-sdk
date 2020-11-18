@@ -131,8 +131,8 @@ func checkInternalClaim(claims []struct { Claim string
 	Value string}, key string, value string) bool {
 
 		for _, val := range claims {
-			fmt.Println(val.Claim)
-			fmt.Println(val.Value)
+			// fmt.Println(val.Claim)
+			// fmt.Println(val.Value)
 			
 			if val.Claim == key  {
 				if val.Value == value {
