@@ -23,6 +23,8 @@ type Token struct {
 
 var Certs []MicrosoftOAuthSigningCerts
 
+var GraphAccessToken Token
+
 func New(signingSource string) error {
 	if signingSource == "" || len(signingSource) < 1 || signingSource[0:4] != "http" {
 		return errors.New("Provided signing source not valid. Must be a valid Microsoft AAD or B2C oAuth2 URL")
@@ -37,7 +39,7 @@ func New(signingSource string) error {
 	return nil
 }
 
-func Parse(token string) (*Token, error) {
+func Parse(token string, validate bool) (*Token, error) {
 
 	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 
@@ -57,18 +59,26 @@ func Parse(token string) (*Token, error) {
 		}
 
 		if cert == "" {
-			return nil, errors.New("Key in tokeen header doesn't match signing keys. Invalid Token.")
+			return nil, errors.New("Key in token header doesn't match signing keys. Invalid Token.")
 		}
 
 		cert1 := convertKey(cert)
+
 		return cert1, nil
 
 	})
 
-	if err != nil {
-		return nil, err
+	if validate {
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if err.Error() != "crypto/rsa: verification error" && err != nil {
+			return nil, err
+		}
 	}
 
+	fmt.Println(t.Valid)
 	var res Token
 
 	res.Token = t
@@ -77,8 +87,12 @@ func Parse(token string) (*Token, error) {
 
 }
 
-func (t *Token) Validate(audience string) (bool, error) {
+func (t *Token) Validate(audience string, graphToken bool) (bool, error) {
 	t.Audience = audience
+
+	if graphToken {
+		t.Token.Valid = true
+	}
 
 	claims, err := extractClaims(t.Token)
 	if err != nil {
@@ -113,34 +127,36 @@ func (t *Token) ValidateCustomClaims(claims map[string]string) (bool, error, []s
 	var invalid []string
 
 	for key, element := range claims {
-        if checkInternalClaim(t.Claims, key, element) {
+		if checkInternalClaim(t.Claims, key, element) {
 			valid = append(valid, key)
 		} else {
 			invalid = append(invalid, key)
 		}
 	}
-	
-	if (len(invalid) > 0 ){
+
+	if len(invalid) > 0 {
 		return false, nil, valid, invalid
 	}
 
 	return true, nil, valid, invalid
 }
 
-func checkInternalClaim(claims []struct { Claim string 
-	Value string}, key string, value string) bool {
+func checkInternalClaim(claims []struct {
+	Claim string
+	Value string
+}, key string, value string) bool {
 
-		for _, val := range claims {
-			
-			if val.Claim == key  {
-				if val.Value == value {
-					return true
-				}
+	for _, val := range claims {
+
+		if val.Claim == key {
+			if val.Value == value {
+				return true
 			}
 		}
-
-		return false
 	}
+
+	return false
+}
 
 func extractClaims(token *jwt.Token) (jwt.MapClaims, error) {
 	claims, ok := token.Claims.(jwt.MapClaims)

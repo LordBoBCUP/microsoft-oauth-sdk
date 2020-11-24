@@ -1,1 +1,1 @@
-"# microsoft-oauth-sdk" 
+# microsoft-oauth-sdk
