@@ -10,7 +10,7 @@ var token string = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsIng1dCI6ImtnMkxZczJUMENU
 var audience string = "api://b8016dea-83fd-4369-b01f-ec99459a87e7"
 
 func TestNew(t *testing.T) {
-	err := New("https://login.microsoftonline.com/common/discovery/keys")
+	_, err := New("https://login.microsoftonline.com/common/discovery/keys")
 	if err != nil {
 		t.Error("Unable to run New Function. Error => ", err)
 	}
@@ -22,7 +22,8 @@ func TestNew(t *testing.T) {
 
 
 func TestParse(t *testing.T) {
-	x, err := Parse(token, true)
+	oauth, err := New("https://login.microsoftonline.com/common/discovery/keys")
+	x, err := oauth.Parse(token, true)
 
 	if x == nil {
 		t.Error("Unable to parse token, nil pointer returned")
@@ -34,7 +35,8 @@ func TestParse(t *testing.T) {
 }
 
 func TestValidate(t *testing.T) {
-	tempToken, err := Parse(token, true)
+	oauth, err := New("https://login.microsoftonline.com/common/discovery/keys")
+	tempToken, err := oauth.Parse(token, true)
 	if err != nil {
 		t.Error("Failed to parse token. Error => ", err)
 		return
@@ -54,7 +56,8 @@ func TestValidate(t *testing.T) {
 }
 
 func TestCustomClaimValidation(t *testing.T) {
-	tempToken, err := Parse(token, true)
+	oauth, err := New("https://login.microsoftonline.com/common/discovery/keys")
+	tempToken, err := oauth.Parse(token, true)
 	if err != nil {
 		t.Error("Unable to parse token")
 	}

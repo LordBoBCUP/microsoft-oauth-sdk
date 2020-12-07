@@ -76,7 +76,9 @@ func getGraphToken(client_id string, client_secret string) error {
 	var response GraphResponse
 	json.Unmarshal(body, &response)
 
-	t, err := Parse(response.AccessToken, false)
+	oauth, err := New("https://login.microsoftonline.com/common/discovery/keys")
+
+	t, err := oauth.Parse(response.AccessToken, false)
 	if err != nil {
 		return err
 	}

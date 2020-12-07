@@ -21,25 +21,31 @@ type Token struct {
 	}
 }
 
+type OAuth struct {
+	Certs []MicrosoftOAuthSigningCerts
+}
+
 var Certs []MicrosoftOAuthSigningCerts
 
 var GraphAccessToken Token
 
-func New(signingSource string) error {
+func New(signingSource string) (*OAuth, error) {
 	if signingSource == "" || len(signingSource) < 1 || signingSource[0:4] != "http" {
-		return errors.New("Provided signing source not valid. Must be a valid Microsoft AAD or B2C oAuth2 URL")
+		return nil, errors.New("Provided signing source not valid. Must be a valid Microsoft AAD or B2C oAuth2 URL")
 	}
 
 	keys, err := getMicrosoftKeys(signingSource)
 	if err != nil {
-		return errors.New("Unable to obtain Microsoft Public Signing Keys")
+		return nil, errors.New("Unable to obtain Microsoft Public Signing Keys")
 	}
 
-	Certs = GetSigningCerts(keys)
-	return nil
+	// Certs = GetSigningCerts(keys)
+	res := &OAuth{}
+	res.Certs = GetSigningCerts(keys)
+	return res, nil
 }
 
-func Parse(token string, validate bool) (*Token, error) {
+func (o *OAuth) Parse(token string, validate bool) (*Token, error) {
 
 	t, err := jwt.Parse(token, func(token *jwt.Token) (interface{}, error) {
 
@@ -52,7 +58,7 @@ func Parse(token string, validate bool) (*Token, error) {
 
 		var cert string
 
-		for _, val := range Certs {
+		for _, val := range o.Certs {
 			if val.Kid == keyID {
 				cert = val.Certificate
 			}
