@@ -1,4 +1,4 @@
-module github.com/lordbobcup/azure-oauth-sdk
+module github.com/lordbobcup/microsoft-oauth-sdk
 
 go 1.15
 
